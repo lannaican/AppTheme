@@ -161,6 +161,7 @@ public class AppTheme {
         color = 0;
         colorOn = 0;
         colorFont = 0;
+        defaultTheme.clear();
     }
 
 }

@@ -1,5 +1,7 @@
 package com.star.theme;
 
+import android.content.Context;
+import android.content.res.Resources;
 import androidx.annotation.ColorRes;
 
 /**
@@ -7,26 +9,64 @@ import androidx.annotation.ColorRes;
  * Author：Stars
  * Create Time：2019/4/29 9:28
  */
-public interface DefaultTheme {
+public abstract class DefaultTheme {
+
+    private int color;
+    private int colorOn;
+    private int colorFont;
+    private int colorFontReverse;
 
     @ColorRes
-    int getColorId();
+    public abstract int getColorId();
 
     @ColorRes
-    int getColorOnId();
+    public abstract int getColorOnId();
 
     @ColorRes
-    int getColorFontId();
+    public abstract int getColorFontId();
 
     @ColorRes
-    int getColorFontReverseId();
+    public abstract int getColorFontReverseId();
 
-    int getColor();
+    public abstract int getColor(int colorId);
 
-    int getColorOn();
+    public int getColor() {
+        if (color == 0) {
+            color = getColor(getColorId());
+        }
+        return color;
+    }
 
-    int getColorFont();
+    public int getColorOn() {
+        if (colorOn == 0) {
+            colorOn = getColor(getColorOnId());
+        }
+        return colorOn;
+    }
 
-    int getColorFontReverse();
+    public int getColorFont() {
+        if (colorFont == 0) {
+            colorFont = getColor(getColorFontId());
+        }
+        return colorFont;
+    }
+
+    public int getColorFontReverse() {
+        if (colorFontReverse == 0) {
+            colorFontReverse = getColor(getColorFontReverseId());
+        }
+        return colorFontReverse;
+    }
+
+
+    /**
+     * 重新获取颜色
+     */
+    void clear() {
+        color = 0;
+        colorOn = 0;
+        colorFont = 0;
+        colorFontReverse = 0;
+    }
 
 }
