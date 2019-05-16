@@ -58,10 +58,10 @@ public class AppTheme {
     /**
      * 设置夜间模式
      */
-    public static void setNight(Activity activity, boolean night) {
+    public static void setNight(Context context, boolean night) {
         storage.set(AppThemeKey.Night, night);
         AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
-        clearCache(activity);
+        clearCache(context);
     }
 
     /**
