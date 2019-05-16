@@ -11,15 +11,13 @@ import androidx.annotation.ColorRes;
  */
 public abstract class DefaultTheme {
 
-    private Context context;
     private int color;
     private int colorOn;
     private int colorFont;
     private int colorFontReverse;
 
     public DefaultTheme(Context context) {
-        this.context = context;
-        update();
+        update(context);
     }
 
     @ColorRes
@@ -53,7 +51,7 @@ public abstract class DefaultTheme {
     /**
      * 重新获取颜色
      */
-    void update() {
+    void update(Context context) {
         Resources resources = context.getResources();
         color = resources.getColor(getColorId());
         colorOn = resources.getColor(getColorOnId());

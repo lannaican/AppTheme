@@ -1,5 +1,6 @@
 package com.star.theme;
 
+import android.app.Activity;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.core.view.LayoutInflaterCompat;
@@ -57,10 +58,10 @@ public class AppTheme {
     /**
      * 设置夜间模式
      */
-    public static void setNight(boolean night) {
+    public static void setNight(Activity activity, boolean night) {
         storage.set(AppThemeKey.Night, night);
         AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
-        clearCache();
+        clearCache(activity);
     }
 
     /**
@@ -156,11 +157,11 @@ public class AppTheme {
         return defaultTheme;
     }
 
-    private static void clearCache() {
+    private static void clearCache(Context context) {
         color = 0;
         colorOn = 0;
         colorFont = 0;
-        defaultTheme.update();
+        defaultTheme.update(context);
     }
 
 }
