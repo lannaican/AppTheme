@@ -15,8 +15,8 @@ public abstract class ViewCreator {
 
     private AppThemeHelper helper;
 
-    public ViewCreator(AppThemeHelper helper) {
-        this.helper = helper;
+    public ViewCreator(Context context, AppThemeAttribute attribute) {
+        this.helper = new AppThemeHelper(context, attribute);
     }
 
     public abstract Map<String, ViewShader> getShaderMap();
