@@ -1,11 +1,11 @@
 package com.star.theme;
 
-import android.app.Activity;
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.core.view.LayoutInflaterCompat;
-import androidx.appcompat.app.AppCompatDelegate;
 import android.view.LayoutInflater;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.view.LayoutInflaterCompat;
 
 /**
  * Detail：
@@ -58,10 +58,10 @@ public class AppTheme {
     /**
      * 设置夜间模式
      */
-    public static void setNight(Context context, boolean night) {
+    public static void setNight(boolean night) {
         storage.set(AppThemeKey.Night, night);
         AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
-        clearCache(context);
+        clearCache();
     }
 
     /**
@@ -157,11 +157,10 @@ public class AppTheme {
         return defaultTheme;
     }
 
-    private static void clearCache(Context context) {
+    private static void clearCache() {
         color = 0;
         colorOn = 0;
         colorFont = 0;
-        defaultTheme.update(context);
     }
 
 }

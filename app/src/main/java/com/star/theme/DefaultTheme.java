@@ -1,7 +1,5 @@
 package com.star.theme;
 
-import android.content.Context;
-import android.content.res.Resources;
 import androidx.annotation.ColorRes;
 
 /**
@@ -9,54 +7,26 @@ import androidx.annotation.ColorRes;
  * Author：Stars
  * Create Time：2019/4/29 9:28
  */
-public abstract class DefaultTheme {
-
-    private int color;
-    private int colorOn;
-    private int colorFont;
-    private int colorFontReverse;
-
-    public DefaultTheme(Context context) {
-        update(context);
-    }
+public interface DefaultTheme {
 
     @ColorRes
-    public abstract int getColorId();
+    int getColorId();
 
     @ColorRes
-    public abstract int getColorOnId();
+    int getColorOnId();
 
     @ColorRes
-    public abstract int getColorFontId();
+    int getColorFontId();
 
     @ColorRes
-    public abstract int getColorFontReverseId();
+    int getColorFontReverseId();
 
-    public int getColor() {
-        return color;
-    }
+    int getColor();
 
-    public int getColorOn() {
-        return colorOn;
-    }
+    int getColorOn();
 
-    public int getColorFont() {
-        return colorFont;
-    }
+    int getColorFont();
 
-    public int getColorFontReverse() {
-        return colorFontReverse;
-    }
-
-    /**
-     * 重新获取颜色
-     */
-    void update(Context context) {
-        Resources resources = context.getResources();
-        color = resources.getColor(getColorId());
-        colorOn = resources.getColor(getColorOnId());
-        colorFont = resources.getColor(getColorFontId());
-        colorFontReverse = resources.getColor(getColorFontReverseId());
-    }
+    int getColorFontReverse();
 
 }
