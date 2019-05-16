@@ -3,10 +3,10 @@ package com.star.theme;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Build;
-import androidx.appcompat.widget.AppCompatImageView;
-import androidx.appcompat.widget.AppCompatTextView;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 /**
  * Detail：
@@ -46,7 +46,7 @@ public class AppThemeHelper {
     /**
      * 替换字体色
      */
-    public void replaceTextColor(AppCompatTextView view, AttributeSet attrs) {
+    public void replaceTextColor(TextView view, AttributeSet attrs) {
         int colorId = getAttributeValue(attrs, attribute.textColor());
         if (colorId != 0) {
             view.setTextColor(getColor(colorId));
@@ -56,7 +56,7 @@ public class AppThemeHelper {
     /**
      * 替换图片着色
      */
-    public void replaceColorFilter(AppCompatImageView view, AttributeSet attrs) {
+    public void replaceColorFilter(ImageView view, AttributeSet attrs) {
         int colorId = getAttributeValue(attrs, attribute.colorFilter());
         if (colorId != 0) {
             view.setColorFilter(getColor(colorId));
