@@ -60,9 +60,7 @@ public class AppTheme {
     public static void setNight(boolean night) {
         storage.set(AppThemeKey.Night, night);
         AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
-        color = 0;
-        colorOn = 0;
-        colorFont = 0;
+        clearCache();
     }
 
     /**
@@ -156,6 +154,13 @@ public class AppTheme {
      */
     public static DefaultTheme getDefaultTheme() {
         return defaultTheme;
+    }
+
+    private static void clearCache() {
+        color = 0;
+        colorOn = 0;
+        colorFont = 0;
+        defaultTheme.update();
     }
 
 }
