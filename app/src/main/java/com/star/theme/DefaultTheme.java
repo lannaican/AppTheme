@@ -28,6 +28,8 @@ public abstract class DefaultTheme {
     @ColorRes
     public abstract int getColorFontReverseId();
 
+    public abstract boolean isDark();
+
     public abstract int getColor(int colorId);
 
     public int getColor() {

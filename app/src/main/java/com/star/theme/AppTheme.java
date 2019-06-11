@@ -144,7 +144,7 @@ public class AppTheme {
      */
     public static boolean isDark() {
         if (dark == 0) {
-            boolean isDark = storage.getBoolean(AppThemeKey.Color_Dark, false);
+            boolean isDark = storage.getBoolean(AppThemeKey.Color_Dark, defaultTheme.isDark());
             dark = isDark ? 1 : 2;
         }
         return dark == 1;
