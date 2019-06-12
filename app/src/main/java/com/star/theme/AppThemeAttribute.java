@@ -11,6 +11,10 @@ public class AppThemeAttribute {
         return "themeTextColor";
     }
 
+    public String hinTextColor() {
+        return "themeHintTextColor";
+    }
+
     public String backgroundColor() {
         return "themeBackgroundColor";
     }

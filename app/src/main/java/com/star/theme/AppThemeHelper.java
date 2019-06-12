@@ -2,9 +2,11 @@ package com.star.theme;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -54,6 +56,16 @@ public class AppThemeHelper {
     }
 
     /**
+     * 替换提示字体色
+     */
+    public void replaceHintTextColor(EditText view, AttributeSet attrs) {
+        int colorId = getAttributeValue(attrs, attribute.hinTextColor());
+        if (colorId != 0) {
+            view.setHintTextColor(alpha(getColor(colorId), 0.6F));
+        }
+    }
+
+    /**
      * 替换图片着色
      */
     public void replaceColorFilter(ImageView view, AttributeSet attrs) {
@@ -90,6 +102,13 @@ public class AppThemeHelper {
             return AppTheme.getColorFontReverse();
         }
         return context.getResources().getColor(colorId);
+    }
+
+    private int alpha(int color, float alpha) {
+        int r = (color >> 16) & 0xff;
+        int g = (color >>  8) & 0xff;
+        int b = (color      ) & 0xff;
+        return Color.argb((int)(255 * alpha), r, g, b);
     }
 
 }
