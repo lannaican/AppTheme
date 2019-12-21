@@ -17,8 +17,6 @@ import android.widget.TextView;
  */
 public class AppThemeHelper {
 
-    private final String namespace = "http://schemas.android.com/apk/res-auto";
-
     private Context context;
     private AppThemeAttribute attribute;
 
@@ -32,7 +30,7 @@ public class AppThemeHelper {
      * 获取Attr值
      */
     public int getAttributeValue(AttributeSet attrs, String name) {
-        return attrs.getAttributeResourceValue(namespace, name, 0);
+        return attrs.getAttributeResourceValue("http://schemas.android.com/apk/res-auto", name, 0);
     }
 
     /**
@@ -91,15 +89,16 @@ public class AppThemeHelper {
      * 根据颜色ID获取颜色
      */
     public int getColor(int colorId) {
-        DefaultTheme theme = AppTheme.getDefaultTheme();
+        AppTheme appTheme = AppTheme.getInstance();
+        DefaultTheme theme = appTheme.getDefaultTheme();
         if (colorId == theme.getColorId()) {
-            return AppTheme.getColor();
+            return appTheme.getColor();
         } else if (colorId == theme.getColorOnId()) {
-            return AppTheme.getColorOn();
+            return appTheme.getColorOn();
         } else if (colorId == theme.getColorFontId()) {
-            return AppTheme.getColorFont();
+            return appTheme.getColorFont();
         } else if (colorId == theme.getColorFontReverseId()) {
-            return AppTheme.getColorFontReverse();
+            return appTheme.getColorFontReverse();
         }
         return context.getResources().getColor(colorId);
     }

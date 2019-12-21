@@ -1,7 +1,5 @@
 package com.star.theme;
 
-import android.content.Context;
-import android.content.res.Resources;
 import androidx.annotation.ColorRes;
 
 /**
