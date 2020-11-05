@@ -29,6 +29,8 @@ public class AppTheme {
     private int colorFont;
     private int dark;
 
+    private boolean ignoreColorOnInNight; //夜间模式忽略强调色
+
     //默认主题色
     private DefaultTheme defaultTheme;
 
@@ -78,6 +80,13 @@ public class AppTheme {
         AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         clearCache();
         callListener();
+    }
+
+    /**
+     * 设置夜间模式忽略强调色
+     */
+    public void setIgnoreColorOnInNight(boolean ignoreColorOnInNight) {
+        this.ignoreColorOnInNight = ignoreColorOnInNight;
     }
 
     /**
@@ -142,10 +151,14 @@ public class AppTheme {
      */
     public int getColorOn() {
         if (colorOn == 0) {
-            if (isNight()) {
-                colorOn = defaultTheme.getColorOn();
-            } else {
+            if (ignoreColorOnInNight) {
                 colorOn = storage.getInt(AppThemeKey.Color_On, defaultTheme.getColorOn());
+            } else {
+                if (isNight()) {
+                    colorOn = defaultTheme.getColorOn();
+                } else {
+                    colorOn = storage.getInt(AppThemeKey.Color_On, defaultTheme.getColorOn());
+                }
             }
         }
         return colorOn;
