@@ -1,11 +1,9 @@
 package com.star.theme;
 
 /**
- * Detail：持久存储
- * Author：Stars
- * Create Time：2019/5/16 11:24
+ * 持久存储
  */
-public interface AppThemeStorage {
+public interface Storage {
 
     void set(String key, int value);
 
@@ -18,5 +16,9 @@ public interface AppThemeStorage {
     boolean getBoolean(String key);
 
     boolean getBoolean(String key, boolean defaultValue);
+
+    void set(Theme theme);
+
+    Theme getTheme(String key);
 
 }

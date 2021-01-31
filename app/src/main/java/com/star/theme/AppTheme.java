@@ -1,20 +1,41 @@
 package com.star.theme;
 
 import android.content.Context;
+import android.util.AttributeSet;
+import android.util.SparseIntArray;
+import android.view.InflateException;
 import android.view.LayoutInflater;
+import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.collection.ArrayMap;
+import androidx.collection.SparseArrayCompat;
 import androidx.core.view.LayoutInflaterCompat;
+import androidx.core.view.LayoutInflaterFactory;
 
-/**
- * Detail：
- * Author：Stars
- * Create Time：2019/3/18 14:25
- */
+import com.star.theme.attr.Attr;
+import com.star.theme.attr.AttrUtils;
+import com.star.theme.attr.AttrView;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 public class AppTheme {
 
     private static AppTheme instance;
+
+    private SparseArrayCompat<List<AttrView>> attrViewMaps = new SparseArrayCompat<>();
+
+    private static final Map<String, Constructor<? extends View>> sConstructorMap = new ArrayMap<>();
+    private final Object[] mConstructorArgs = new Object[2];
+    private static final Class<?>[] sConstructorSignature = new Class[]{Context.class, AttributeSet.class};
 
     public static AppTheme getInstance() {
         if (instance == null) {
@@ -23,20 +44,19 @@ public class AppTheme {
         return instance;
     }
 
-    //缓存色
-    private int color;
-    private int colorOn;
-    private int colorFont;
-    private int dark;
-
-    //默认主题色
-    private DefaultTheme defaultTheme;
-
-    //布局构造器
-    private AppThemeFactory factory;
-
     //持久存储
-    private AppThemeStorage storage;
+    private Storage storage;
+
+    //缓存色值
+    private SparseIntArray colorCache = new SparseIntArray();
+
+    //是否暗色
+    private Boolean isDark;
+
+    //默认主题
+    private Theme defaultTheme;
+    //当前主题
+    private Theme currentTheme;
 
     private OnAppThemeListener onAppThemeListener;
 
@@ -45,11 +65,18 @@ public class AppTheme {
     /**
      * 初始化
      */
-    public void init(@NonNull ViewCreator creator, @NonNull AppThemeStorage storage,
-                     @NonNull DefaultTheme defaultTheme) {
-        this.factory = new AppThemeFactory(creator);
+    public void init(@NonNull Storage storage, @NonNull Theme defaultTheme) {
         this.storage = storage;
         this.defaultTheme = defaultTheme;
+        this.currentTheme = storage.getTheme(StorageKey.Theme);
+        if (this.currentTheme == null) {
+            this.currentTheme = defaultTheme;
+        }
+    }
+
+    public void setTheme(@NonNull Theme theme) {
+        this.currentTheme = theme;
+        callListener();
     }
 
     public void setListener(OnAppThemeListener callBack) {
@@ -57,59 +84,49 @@ public class AppTheme {
     }
 
     /**
-     * 对每个Activity进行注册
+     * 注册
      */
-    public void register(Context context) {
-        LayoutInflaterCompat.setFactory2(LayoutInflater.from(context), factory);
+    public void attach(AppCompatActivity activity) {
+        if (activity.getDelegate() instanceof LayoutInflaterFactory) {
+            LayoutInflaterFactory originInflaterFactory = (LayoutInflaterFactory) activity.getDelegate();
+            LayoutInflaterFactory proxyInflaterFactory = (LayoutInflaterFactory) Proxy.newProxyInstance(
+                    originInflaterFactory.getClass().getClassLoader(),
+                    new Class[]{LayoutInflaterFactory.class},
+                    new InflateFactoryHandler<>(originInflaterFactory, activity));
+            LayoutInflater layoutInflater = LayoutInflater.from(activity);
+            LayoutInflaterCompat.setFactory(layoutInflater, proxyInflaterFactory);
+        } else if (activity.getDelegate() instanceof LayoutInflater.Factory2) {
+            LayoutInflater.Factory2 originInflaterFactory = (LayoutInflater.Factory2) activity.getDelegate();
+            LayoutInflater.Factory2 proxyInflaterFactory = (LayoutInflater.Factory2) Proxy.newProxyInstance(
+                    originInflaterFactory.getClass().getClassLoader(),
+                    new Class[]{LayoutInflater.Factory2.class},
+                    new InflateFactoryHandler<>(originInflaterFactory, activity));
+            LayoutInflater layoutInflater = LayoutInflater.from(activity);
+            LayoutInflaterCompat.setFactory2(layoutInflater, proxyInflaterFactory);
+        }
+    }
+
+    /**
+     * 取消注册
+     */
+    public void detach(AppCompatActivity activity) {
+        attrViewMaps.remove(activity.hashCode());
     }
 
     /**
      * 是否是夜间模式
      */
     public boolean isNight() {
-        return storage.getBoolean(AppThemeKey.Night);
+        return storage.getBoolean(StorageKey.Night);
     }
 
     /**
      * 设置夜间模式
      */
     public void setNight(boolean night) {
-        storage.set(AppThemeKey.Night, night);
+        storage.set(StorageKey.Night, night);
         AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         clearCache();
-        callListener();
-    }
-
-    /**
-     * 设置主题
-     */
-    public void setColors(int color, int colorOn, boolean isDark) {
-        this.color = color;
-        this.colorOn = colorOn;
-        this.dark = isDark ? 1 : 2;
-        this.colorFont = 0;
-        storage.set(AppThemeKey.Color, color);
-        storage.set(AppThemeKey.Color_On, colorOn);
-        storage.set(AppThemeKey.Color_Dark, isDark);
-        callListener();
-    }
-
-    /**
-     * 设置主题色
-     */
-    public void setColor(int color) {
-        storage.set(AppThemeKey.Color, color);
-        this.color = color;
-        this.colorFont = 0;
-        callListener();
-    }
-
-    /**
-     * 设置强调色
-     */
-    public void setColorOn(int color) {
-        storage.set(AppThemeKey.Color_On, color);
-        this.colorOn = color;
         callListener();
     }
 
@@ -117,87 +134,44 @@ public class AppTheme {
      * 设置是否暗色
      */
     public void setColorDark(boolean dark) {
-        storage.set(AppThemeKey.Color_Dark, dark);
-        this.dark = dark ? 1 : 2;
-        colorFont = 0;
+        storage.set(StorageKey.Color_Dark, dark);
+        isDark = dark;
+        clearCache();
         callListener();
     }
 
     /**
      * 获取主题色
      */
-    public int getColor() {
-        if (color == 0) {
+    public int getColor(int colorId) {
+        int color = colorCache.get(colorId, -1);
+        if (color == -1) {
             if (isNight()) {
-                color = defaultTheme.getColor();
+                color = defaultTheme.getColor(colorId);
             } else {
-                color = storage.getInt(AppThemeKey.Color, defaultTheme.getColor());
+                color = currentTheme.getColor(colorId);
             }
+            colorCache.put(colorId, color);
         }
         return color;
-    }
-
-    /**
-     * 获取主题强调色
-     */
-    public int getColorOn() {
-        if (colorOn == 0) {
-            if (isNight()) {
-                colorOn = defaultTheme.getColorOn();
-            } else {
-                colorOn = storage.getInt(AppThemeKey.Color_On, defaultTheme.getColorOn());
-            }
-        }
-        return colorOn;
-    }
-
-    /**
-     * 获取主题字体色
-     */
-    public int getColorFont() {
-        if (colorFont == 0) {
-            if (isNight()) {
-                colorFont = defaultTheme.getColorFont();
-            } else {
-                colorFont = isDark() ? defaultTheme.getColorFontReverse() : defaultTheme.getColorFont();
-            }
-        }
-        return colorFont;
-    }
-
-    /**
-     * 获取主题字体色反色
-     */
-    public int getColorFontReverse() {
-        return isDark() ? defaultTheme.getColorFont() : defaultTheme.getColorFontReverse();
     }
 
     /**
      * 暗色主题
      */
     public boolean isDark() {
-        if (dark == 0) {
-            boolean isDark = storage.getBoolean(AppThemeKey.Color_Dark, defaultTheme.isDark());
-            dark = isDark ? 1 : 2;
+        if (isDark == null) {
+            isDark = storage.getBoolean(StorageKey.Color_Dark, defaultTheme.isDark());
         }
-        return dark == 1;
-    }
-
-    /**
-     * 获取默认主题
-     */
-    public DefaultTheme getDefaultTheme() {
-        return defaultTheme;
+        return isDark;
     }
 
     /**
      * 清除缓存
      */
-    private void clearCache() {
-        color = 0;
-        colorOn = 0;
-        colorFont = 0;
-        defaultTheme.clear();
+    public void clearCache() {
+        colorCache.clear();
+        isDark = null;
     }
 
     private void callListener() {
@@ -206,4 +180,97 @@ public class AppTheme {
         }
     }
 
+
+    /*****************************************************************************/
+
+    class InflateFactoryHandler<T> implements InvocationHandler {
+
+        private T inflaterFactory;
+        private AppCompatActivity activity;
+
+        public InflateFactoryHandler(T inflaterFactory, AppCompatActivity activity) {
+            this.inflaterFactory = inflaterFactory;
+            this.activity = activity;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            Object result = null;
+            try {
+                result = method.invoke(inflaterFactory, args);
+            } catch (Exception e) { }
+
+            List<Attr> attrs = AttrUtils.getAttrs(args, activity.getResources());
+            if (attrs.isEmpty()) {
+                return result;
+            }
+            if (result == null) {
+                result = createViewFromTag((Context)args[2], (String)args[1], (AttributeSet)args[3]);
+            }
+            if (attrs.size() > 0) {
+                AttrView attrView = new AttrView((View) result, attrs);
+                putAttrView(attrView, activity.hashCode());
+                if (result != null) {
+                    attrView.apply();
+                }
+            }
+            return result;
+        }
+
+        private void putAttrView(AttrView attrView, int hashCode) {
+            List<AttrView> attrViews;
+            if (attrViewMaps.indexOfKey(hashCode) > -1) {
+                attrViews = attrViewMaps.get(hashCode);
+            } else {
+                attrViews = new ArrayList<>();
+            }
+            attrViews.add(attrView);
+            attrViewMaps.put(hashCode, attrViews);
+        }
+
+        private View createViewFromTag(Context context, String name, AttributeSet attrs) {
+            if (name.equals("view")) {
+                name = attrs.getAttributeValue(null, "class");
+            }
+
+            try {
+                mConstructorArgs[0] = context;
+                mConstructorArgs[1] = attrs;
+
+                if (-1 == name.indexOf('.')) {
+                    return createView(context, name, "android.widget.");
+                } else {
+                    return createView(context, name, null);
+                }
+            } catch (Exception e) {
+                // We do not want to catch these, lets return null and let the actual LayoutInflater
+                // try
+                return null;
+            } finally {
+                // Don't retain references on context.
+                mConstructorArgs[0] = null;
+                mConstructorArgs[1] = null;
+            }
+        }
+
+        private View createView(Context context, String name, String prefix)
+                throws ClassNotFoundException, InflateException {
+
+            Constructor<? extends View> constructor = sConstructorMap.get(name);
+
+            try {
+                if (constructor == null) {
+                    Class<? extends View> clazz = context.getClassLoader().loadClass(
+                            prefix != null ? (prefix + name) : name).asSubclass(View.class);
+
+                    constructor = clazz.getConstructor(sConstructorSignature);
+                    sConstructorMap.put(name, constructor);
+                }
+                constructor.setAccessible(true);
+                return constructor.newInstance(mConstructorArgs);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
 }
