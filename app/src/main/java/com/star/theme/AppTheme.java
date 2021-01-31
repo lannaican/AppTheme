@@ -48,10 +48,7 @@ public class AppTheme {
     private Storage storage;
 
     //缓存色值
-    private SparseIntArray colorCache = new SparseIntArray();
-
-    //是否暗色
-    private Boolean isDark;
+    private final SparseIntArray colorCache = new SparseIntArray();
 
     //默认主题
     private Theme defaultTheme;
@@ -132,16 +129,6 @@ public class AppTheme {
     }
 
     /**
-     * 设置是否暗色
-     */
-    public void setColorDark(boolean dark) {
-        storage.set(StorageKey.Color_Dark, dark);
-        isDark = dark;
-        update();
-        callListener();
-    }
-
-    /**
      * 获取主题色
      */
     public int getColor(int colorId) {
@@ -161,10 +148,7 @@ public class AppTheme {
      * 暗色主题
      */
     public boolean isDark() {
-        if (isDark == null) {
-            isDark = storage.getBoolean(StorageKey.Color_Dark, defaultTheme.isDark());
-        }
-        return isDark;
+        return currentTheme.isDark();
     }
 
     /**
@@ -186,7 +170,6 @@ public class AppTheme {
      */
     public void clearCache() {
         colorCache.clear();
-        isDark = null;
     }
 
     private void callListener() {
