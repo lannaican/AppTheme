@@ -76,6 +76,7 @@ public class AppTheme {
 
     public void setTheme(@NonNull Theme theme) {
         this.currentTheme = theme;
+        update();
         callListener();
     }
 
@@ -126,7 +127,7 @@ public class AppTheme {
     public void setNight(boolean night) {
         storage.set(StorageKey.Night, night);
         AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
-        clearCache();
+        update();
         callListener();
     }
 
@@ -136,7 +137,7 @@ public class AppTheme {
     public void setColorDark(boolean dark) {
         storage.set(StorageKey.Color_Dark, dark);
         isDark = dark;
-        clearCache();
+        update();
         callListener();
     }
 
@@ -164,6 +165,20 @@ public class AppTheme {
             isDark = storage.getBoolean(StorageKey.Color_Dark, defaultTheme.isDark());
         }
         return isDark;
+    }
+
+    /**
+     * 实时更新UI
+     */
+    private void update() {
+        clearCache();
+        int count = attrViewMaps.size();
+        for (int i=0; i<count; i++) {
+            List<AttrView> attrViews = attrViewMaps.valueAt(i);
+            for (AttrView attrView : attrViews) {
+                attrView.apply();
+            }
+        }
     }
 
     /**
