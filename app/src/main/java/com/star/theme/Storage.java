@@ -3,7 +3,7 @@ package com.star.theme;
 /**
  * 持久存储
  */
-public interface Storage {
+public interface Storage<T extends Theme> {
 
     void set(String key, int value);
 
@@ -17,8 +17,8 @@ public interface Storage {
 
     boolean getBoolean(String key, boolean defaultValue);
 
-    void set(Theme theme);
+    void set(String key, T theme);
 
-    Theme getTheme(String key);
+    T getTheme(String key);
 
 }
