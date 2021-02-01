@@ -71,6 +71,7 @@ public class AppTheme {
         if (this.currentTheme == null) {
             this.currentTheme = defaultTheme;
         }
+        AppCompatDelegate.setDefaultNightMode(storage.getBoolean(StorageKey.Night) ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
     }
 
     public void setTheme(AppCompatActivity activity, @NonNull Theme theme) {
