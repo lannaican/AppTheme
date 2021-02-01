@@ -21,6 +21,7 @@ import com.star.theme.attr.AttrUtils;
 import com.star.theme.attr.AttrView;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -72,8 +73,9 @@ public class AppTheme {
         }
     }
 
-    public void setTheme(@NonNull Theme theme) {
+    public void setTheme(AppCompatActivity activity, @NonNull Theme theme) {
         this.currentTheme = theme;
+        invokeResources(activity);
         update();
         callListener();
     }
@@ -126,7 +128,8 @@ public class AppTheme {
     /**
      * 设置夜间模式
      */
-    public void setNight(boolean night) {
+    public void setNight(AppCompatActivity activity, boolean night) {
+        invokeResources(activity);
         storage.set(StorageKey.Night, night);
         AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         update();
@@ -154,6 +157,21 @@ public class AppTheme {
      */
     public boolean isDark() {
         return currentTheme.isDark();
+    }
+
+    /**
+     * 更新StateListDrawable
+     */
+    private void invokeResources(AppCompatActivity activity) {
+        try {
+            Field resources = AppCompatActivity.class.getDeclaredField("mResources");
+            resources.setAccessible(true);
+            resources.set(activity, null);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
