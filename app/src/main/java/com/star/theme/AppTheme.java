@@ -16,6 +16,7 @@ import androidx.core.view.LayoutInflaterCompat;
 import androidx.core.view.LayoutInflaterFactory;
 
 import com.star.theme.attr.Attr;
+import com.star.theme.attr.AttrType;
 import com.star.theme.attr.AttrUtils;
 import com.star.theme.attr.AttrView;
 
@@ -75,6 +76,10 @@ public class AppTheme {
         this.currentTheme = theme;
         update();
         callListener();
+    }
+
+    public void addAttrType(AttrType type) {
+        AttrUtils.addType(type);
     }
 
     public void setListener(OnAppThemeListener callBack) {
@@ -210,6 +215,9 @@ public class AppTheme {
                 putAttrView(attrView, activity.hashCode());
                 if (result != null) {
                     attrView.apply();
+                }
+                if (result instanceof ThemeView) {
+                    ((ThemeView) result).onThemeApply(currentTheme);
                 }
             }
             return result;
