@@ -17,9 +17,9 @@ public class AttrTypeBackground extends AttrType {
     @Override
     public void apply(View view, String resName) {
         if (TextUtils.isEmpty(resName)) return;
-        Drawable drawable = getDrawable(view.getContext(), resName);
-        if (drawable == null) return;
-        view.setBackground(drawable);
+        int drawableId = getDrawableId(view.getContext(), resName);
+        if (drawableId == 0) return;
+        view.setBackgroundResource(drawableId);
     }
 
     @Override

@@ -22,9 +22,9 @@ public class AttrTypeImageSrc extends AttrType {
     public void apply(View view, String resName) {
         if (TextUtils.isEmpty(resName)) return;
         if (view instanceof ImageView) {
-            Drawable drawable = getDrawable(view.getContext(), resName);
-            if (drawable == null) return;
-            ((ImageView) view).setImageDrawable(drawable);
+            int drawableId = getDrawableId(view.getContext(), resName);
+            if (drawableId == 0) return;
+            ((ImageView) view).setImageResource(drawableId);
         }
     }
 

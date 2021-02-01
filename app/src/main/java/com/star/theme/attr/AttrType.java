@@ -4,6 +4,12 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.view.View;
+import android.widget.TextView;
+
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
+
+import com.star.theme.AppTheme;
 
 
 public abstract class AttrType {
@@ -34,6 +40,15 @@ public abstract class AttrType {
         return resources.getResourceEntryName(id);
     }
 
+    protected int getColor(Context context, String resName) {
+        Resources resources = context.getResources();
+        int colorId = resources.getIdentifier(resName, COLOR, context.getPackageName());
+        if (0 != colorId) {
+            return AppTheme.getInstance().getColor(colorId);
+        }
+        return resources.getColor(colorId);
+    }
+
     protected Drawable getDrawable(Context context, String resName) {
         Drawable drawable = null;
         Resources resources = context.getResources();
@@ -50,6 +65,11 @@ public abstract class AttrType {
             }
         }
         return drawable;
+    }
+
+    protected @DrawableRes int getDrawableId(Context context, String resName) {
+        Resources resources = context.getResources();
+        return resources.getIdentifier(resName, DRAWABLE, context.getPackageName());
     }
 
 }
