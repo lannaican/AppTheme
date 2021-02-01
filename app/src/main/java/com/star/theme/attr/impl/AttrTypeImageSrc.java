@@ -1,16 +1,10 @@
 package com.star.theme.attr.impl;
 
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.star.theme.attr.AttrType;
-
-/**
- * Created by like on 2017/7/25.
- */
 
 public class AttrTypeImageSrc extends AttrType {
 
@@ -19,12 +13,9 @@ public class AttrTypeImageSrc extends AttrType {
     }
 
     @Override
-    public void apply(View view, String resName) {
-        if (TextUtils.isEmpty(resName)) return;
+    public void apply(View view, int resId, String resName) {
         if (view instanceof ImageView) {
-            int drawableId = getDrawableId(view.getContext(), resName);
-            if (drawableId == 0) return;
-            ((ImageView) view).setImageResource(drawableId);
+            ((ImageView) view).setImageResource(resId);
         }
     }
 

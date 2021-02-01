@@ -7,7 +7,6 @@ import com.star.theme.attr.impl.AttrTypeBackground;
 import com.star.theme.attr.impl.AttrTypeImageSrc;
 import com.star.theme.attr.impl.AttrTypeProgressDrawable;
 import com.star.theme.attr.impl.AttrTypeTextColor;
-import com.star.theme.attr.impl.AttrTypeTextStyle;
 import com.star.theme.attr.impl.AttrTypeTint;
 
 import java.util.ArrayList;
@@ -31,9 +30,6 @@ public class AttrUtils {
         AttrType textColor = new AttrTypeTextColor();
         attrTypeHashMap.put(textColor.getAttrType(), textColor);
 
-        AttrType textStyle = new AttrTypeTextStyle();
-        attrTypeHashMap.put(textStyle.getAttrType(), textStyle);
-
         AttrType tint = new AttrTypeTint();
         attrTypeHashMap.put(tint.getAttrType(), tint);
     }
@@ -56,13 +52,14 @@ public class AttrUtils {
                 if (obj instanceof AttributeSet) {
                     AttributeSet set = (AttributeSet) obj;
                     for (int i = 0; i < set.getAttributeCount(); i++) {
+                        int attrId = set.getAttributeNameResource(i);
                         String attrName = set.getAttributeName(i);
                         String attrValue = set.getAttributeValue(i);
                         AttrType attrType = getSupportAttrType(attrName);
                         if (attrType == null) continue;
                         if (attrValue.startsWith("@")) {
                             String resourceName = attrType.getResourceName(attrValue, resources);
-                            Attr attr = new Attr(resourceName, attrType);
+                            Attr attr = new Attr(attrId, resourceName, attrType);
                             attrs.add(attr);
                         }
                     }

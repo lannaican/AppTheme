@@ -1,10 +1,10 @@
 package com.star.theme.attr.impl;
 
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.View;
 
+import com.star.theme.AppTheme;
 import com.star.theme.attr.AttrType;
 
 
@@ -15,11 +15,14 @@ public class AttrTypeBackground extends AttrType {
     }
 
     @Override
-    public void apply(View view, String resName) {
+    public void apply(View view, int resId, String resName) {
         if (TextUtils.isEmpty(resName)) return;
-        int drawableId = getDrawableId(view.getContext(), resName);
-        if (drawableId == 0) return;
-        view.setBackgroundResource(drawableId);
+        try {
+            view.setBackgroundResource(0);
+            view.setBackgroundResource(resId);
+        } catch (Resources.NotFoundException e) {
+            view.setBackgroundColor(AppTheme.getInstance().getColor(resId));
+        }
     }
 
     @Override

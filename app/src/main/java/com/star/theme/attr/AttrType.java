@@ -4,9 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.view.View;
-import android.widget.TextView;
 
-import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 
 import com.star.theme.AppTheme;
@@ -30,7 +28,7 @@ public abstract class AttrType {
         return attrType;
     }
 
-    public abstract void apply(View view, String resName);
+    public abstract void apply(View view, int resId, String resName);
 
     public abstract String getResourceName(String attrValue, Resources resources);
 

@@ -1,7 +1,7 @@
 package com.star.theme.attr.impl;
 
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -14,9 +14,14 @@ public class AttrTypeTextColor extends AttrType {
     }
 
     @Override
-    public void apply(View view, String resName) {
-        if (TextUtils.isEmpty(resName)) return;
-        ((TextView) view).setTextColor(getColor(view.getContext(), resName));
+    public void apply(View view, int resId, String resName) {
+        Resources resources = view.getResources();
+        try {
+            ColorStateList colorList = resources.getColorStateList(resId);
+            ((TextView) view).setTextColor(colorList);
+        } catch (Resources.NotFoundException e) {
+            ((TextView) view).setTextColor(getColor(view.getContext(), resName));
+        }
     }
 
     @Override
