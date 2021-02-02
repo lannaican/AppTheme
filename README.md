@@ -89,6 +89,10 @@ public class CustomTheme implements Theme {
 2.初始化
 ```
 AppTheme.getInstance().init(); //建议在Application中执行
+
+AppTheme.getInstant.attach(); //在BaseActivity setContentView之前注册
+
+AppTheme.getInstant.detach(); //在BaseActivity onDestory取消注册
 ```
 
 3.切换主题/夜间模式
