@@ -16,6 +16,11 @@ public class AttrTypeProgressDrawable extends AttrType {
 
     @Override
     public void apply(View view, int resId, String resName) {
+
+    }
+
+    @Override
+    public void applyChanged(View view, int resId, String resName) {
         if (TextUtils.isEmpty(resName)) return;
         Drawable drawable = getDrawable(view.getContext(), resName);
         if (drawable == null) return;

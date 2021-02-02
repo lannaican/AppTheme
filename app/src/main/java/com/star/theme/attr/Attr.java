@@ -2,6 +2,8 @@ package com.star.theme.attr;
 
 import android.view.View;
 
+import com.star.theme.attr.AttrType;
+
 public class Attr {
 
     int resId;
@@ -14,9 +16,13 @@ public class Attr {
         this.attrType = attrType;
     }
 
-    public void apply(View view) {
+    public void apply(View view, boolean changed) {
         if (resId != 0) {
-            attrType.apply(view, resId, resName);
+            if (changed) {
+                attrType.applyChanged(view, resId, resName);
+            } else {
+                attrType.apply(view, resId, resName);
+            }
         }
     }
 }

@@ -1,27 +1,27 @@
 package com.star.theme.attr.impl;
 
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.view.View;
-import android.widget.ImageView;
 
+import com.star.theme.AppTheme;
 import com.star.theme.attr.AttrType;
 
-public class AttrTypeImageSrc extends AttrType {
 
-    public AttrTypeImageSrc() {
-        super("src");
+public class AttrTypeBackgroundTint extends AttrType {
+
+    public AttrTypeBackgroundTint() {
+        super("backgroundTint");
     }
 
     @Override
     public void apply(View view, int resId, String resName) {
-
+        view.setBackgroundTintList(ColorStateList.valueOf(AppTheme.getInstance().getColor(resId)));
     }
 
     @Override
     public void applyChanged(View view, int resId, String resName) {
-        if (view instanceof ImageView) {
-            ((ImageView) view).setImageResource(resId);
-        }
+        view.setBackgroundTintList(ColorStateList.valueOf(AppTheme.getInstance().getColor(resId)));
     }
 
     @Override

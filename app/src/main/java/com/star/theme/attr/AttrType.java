@@ -7,8 +7,6 @@ import android.view.View;
 
 import androidx.annotation.DrawableRes;
 
-import com.star.theme.AppTheme;
-
 
 public abstract class AttrType {
 
@@ -28,7 +26,15 @@ public abstract class AttrType {
         return attrType;
     }
 
+    /**
+     * 构造布局
+     */
     public abstract void apply(View view, int resId, String resName);
+
+    /**
+     * 主题改变
+     */
+    public abstract void applyChanged(View view, int resId, String resName);
 
     public abstract String getResourceName(String attrValue, Resources resources);
 
@@ -36,15 +42,6 @@ public abstract class AttrType {
         int id = Integer.parseInt(attrValue.substring(1));
         if (id==0) return null;
         return resources.getResourceEntryName(id);
-    }
-
-    protected int getColor(Context context, String resName) {
-        Resources resources = context.getResources();
-        int colorId = resources.getIdentifier(resName, COLOR, context.getPackageName());
-        if (0 != colorId) {
-            return AppTheme.getInstance().getColor(colorId);
-        }
-        return resources.getColor(colorId);
     }
 
     protected Drawable getDrawable(Context context, String resName) {
@@ -65,7 +62,8 @@ public abstract class AttrType {
         return drawable;
     }
 
-    protected @DrawableRes int getDrawableId(Context context, String resName) {
+    protected @DrawableRes
+    int getDrawableId(Context context, String resName) {
         Resources resources = context.getResources();
         return resources.getIdentifier(resName, DRAWABLE, context.getPackageName());
     }

@@ -1,5 +1,7 @@
 package com.star.theme;
 
+import com.star.theme.Theme;
+
 /**
  * 持久存储
  */

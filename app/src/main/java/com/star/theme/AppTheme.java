@@ -1,13 +1,18 @@
 package com.star.theme;
 
+import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
 import android.util.AttributeSet;
-import android.util.SparseIntArray;
 import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.collection.ArrayMap;
@@ -15,6 +20,9 @@ import androidx.collection.SparseArrayCompat;
 import androidx.core.view.LayoutInflaterCompat;
 import androidx.core.view.LayoutInflaterFactory;
 
+import com.star.theme.Storage;
+import com.star.theme.Theme;
+import com.star.theme.ThemeView;
 import com.star.theme.attr.Attr;
 import com.star.theme.attr.AttrType;
 import com.star.theme.attr.AttrUtils;
@@ -29,19 +37,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class AppTheme {
+public class AppTheme implements Application.ActivityLifecycleCallbacks {
 
-    private static AppTheme instance;
+    private static com.star.theme.AppTheme instance;
 
     private SparseArrayCompat<List<AttrView>> attrViewMaps = new SparseArrayCompat<>();
+    private List<Activity> activities = new ArrayList<>();
 
     private static final Map<String, Constructor<? extends View>> sConstructorMap = new ArrayMap<>();
     private final Object[] mConstructorArgs = new Object[2];
     private static final Class<?>[] sConstructorSignature = new Class[]{Context.class, AttributeSet.class};
 
-    public static AppTheme getInstance() {
+    public static com.star.theme.AppTheme getInstance() {
         if (instance == null) {
-            instance = new AppTheme();
+            instance = new com.star.theme.AppTheme();
         }
         return instance;
     }
@@ -49,44 +58,53 @@ public class AppTheme {
     //持久存储
     private Storage storage;
 
-    //缓存色值
-    private final SparseIntArray colorCache = new SparseIntArray();
-
-    //默认主题
-    private Theme defaultTheme;
     //当前主题
     private Theme currentTheme;
 
-    private OnAppThemeListener onAppThemeListener;
+    private List<OnThemeListener> onThemeListeners = new ArrayList<>();
 
     private AppTheme() {}
 
     /**
      * 初始化
      */
-    public void init(@NonNull Storage storage, @NonNull Theme defaultTheme) {
+    public void init(Application application, @NonNull Storage storage, @NonNull Theme defaultTheme) {
+        application.registerActivityLifecycleCallbacks(this);
         this.storage = storage;
-        this.defaultTheme = defaultTheme;
-        this.currentTheme = storage.getTheme(StorageKey.Theme);
+        this.currentTheme = storage.getTheme(com.star.theme.StorageKey.Theme);
         if (this.currentTheme == null) {
             this.currentTheme = defaultTheme;
         }
-        AppCompatDelegate.setDefaultNightMode(storage.getBoolean(StorageKey.Night) ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+        boolean isNight = storage.getBoolean(com.star.theme.StorageKey.Night);
+        if (isNight) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
     }
 
     public void setTheme(AppCompatActivity activity, @NonNull Theme theme) {
+        callListener(0);
         this.currentTheme = theme;
+        storage.set(com.star.theme.StorageKey.Theme, theme);
+        callListener(1);
         invokeResources(activity);
         update();
-        callListener();
+        callListener(2);
+    }
+
+    public Theme getTheme() {
+        return currentTheme;
     }
 
     public void addAttrType(AttrType type) {
         AttrUtils.addType(type);
     }
 
-    public void setListener(OnAppThemeListener callBack) {
-        this.onAppThemeListener = callBack;
+    public void addOnThemeListener(OnThemeListener listener) {
+        onThemeListeners.add(listener);
+    }
+
+    public void removeThemeListener(OnThemeListener listener) {
+        onThemeListeners.remove(listener);
     }
 
     /**
@@ -123,34 +141,27 @@ public class AppTheme {
      * 是否是夜间模式
      */
     public boolean isNight() {
-        return storage.getBoolean(StorageKey.Night);
+        return storage.getBoolean(com.star.theme.StorageKey.Night);
     }
 
     /**
      * 设置夜间模式
      */
     public void setNight(AppCompatActivity activity, boolean night) {
+        callListener(0);
         invokeResources(activity);
-        storage.set(StorageKey.Night, night);
+        storage.set(com.star.theme.StorageKey.Night, night);
         AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+        callListener(1);
         update();
-        callListener();
+        callListener(2);
     }
 
     /**
      * 获取主题色
      */
     public int getColor(int colorId) {
-        int color = colorCache.get(colorId, -1);
-        if (color == -1) {
-            if (isNight()) {
-                color = defaultTheme.getColor(colorId);
-            } else {
-                color = currentTheme.getColor(colorId);
-            }
-            colorCache.put(colorId, color);
-        }
-        return color;
+        return currentTheme.getColor(colorId);
     }
 
     /**
@@ -168,9 +179,7 @@ public class AppTheme {
             Field resources = AppCompatActivity.class.getDeclaredField("mResources");
             resources.setAccessible(true);
             resources.set(activity, null);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -184,7 +193,24 @@ public class AppTheme {
         for (int i=0; i<count; i++) {
             List<AttrView> attrViews = attrViewMaps.valueAt(i);
             for (AttrView attrView : attrViews) {
-                attrView.apply();
+                attrView.apply(true);
+            }
+        }
+        for (Activity act : activities) {
+            act.getWindow().setBackgroundDrawable(new ColorDrawable(getColor(currentTheme.getWindowBackgroundId())));
+            View rootView = act.findViewById(android.R.id.content);
+            updateThemeView(rootView);
+        }
+    }
+
+    private void updateThemeView(View view) {
+        if (view instanceof ThemeView) {
+            ((ThemeView) view).onThemeApply();
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i=0; i<group.getChildCount(); i++) {
+                updateThemeView(group.getChildAt(i));
             }
         }
     }
@@ -193,13 +219,62 @@ public class AppTheme {
      * 清除缓存
      */
     public void clearCache() {
-        colorCache.clear();
+
     }
 
-    private void callListener() {
-        if (onAppThemeListener != null) {
-            onAppThemeListener.onChanged();
+    private void callListener(int state) {
+        switch (state) {
+            case 0:
+                for (OnThemeListener listener : onThemeListeners) {
+                    listener.onThemeChangeBefore();
+                }
+                break;
+            case 1:
+                for (OnThemeListener listener : onThemeListeners) {
+                    listener.onThemeViewApplyBefore();
+                }
+                break;
+            case 2:
+                for (OnThemeListener listener : onThemeListeners) {
+                    listener.onThemeChanged();
+                }
+                break;
         }
+    }
+
+    @Override
+    public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+        activities.add(activity);
+    }
+
+    @Override
+    public void onActivityStarted(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityResumed(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityPaused(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityStopped(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+
+    }
+
+    @Override
+    public void onActivityDestroyed(@NonNull Activity activity) {
+        activities.remove(activity);
     }
 
 
@@ -207,8 +282,8 @@ public class AppTheme {
 
     class InflateFactoryHandler<T> implements InvocationHandler {
 
-        private T inflaterFactory;
-        private AppCompatActivity activity;
+        private final T inflaterFactory;
+        private final AppCompatActivity activity;
 
         public InflateFactoryHandler(T inflaterFactory, AppCompatActivity activity) {
             this.inflaterFactory = inflaterFactory;
@@ -221,7 +296,6 @@ public class AppTheme {
             try {
                 result = method.invoke(inflaterFactory, args);
             } catch (Exception e) { }
-
             List<Attr> attrs = AttrUtils.getAttrs(args, activity.getResources());
             if (attrs.isEmpty()) {
                 return result;
@@ -233,10 +307,7 @@ public class AppTheme {
                 AttrView attrView = new AttrView((View) result, attrs);
                 putAttrView(attrView, activity.hashCode());
                 if (result != null) {
-                    attrView.apply();
-                }
-                if (result instanceof ThemeView) {
-                    ((ThemeView) result).onThemeApply(currentTheme);
+                    attrView.apply(false);
                 }
             }
             return result;
@@ -254,8 +325,8 @@ public class AppTheme {
         }
 
         private View createViewFromTag(Context context, String name, AttributeSet attrs) {
-            if (name.equals("view")) {
-                name = attrs.getAttributeValue(null, "class");
+            if (name.equals("View")) {
+                name = "android.view.View";
             }
 
             try {

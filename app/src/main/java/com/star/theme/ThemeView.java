@@ -6,6 +6,6 @@ package com.star.theme;
  */
 public interface ThemeView {
 
-    void onThemeApply(Theme theme);
+    void onThemeApply();
 
 }

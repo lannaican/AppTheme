@@ -8,6 +8,8 @@ public interface Theme {
 
     boolean isDark();
 
+    int getWindowBackgroundId();
+
     int getColor(int colorId);
 
 }

@@ -15,7 +15,20 @@ public class AttrTypeTint extends AttrType {
 
     @Override
     public void apply(View view, int resId, String resName) {
-        ((ImageView) view).setColorFilter(AppTheme.getInstance().getColor(resId));
+        if (view instanceof ImageView) {
+            int color = AppTheme.getInstance().getColor(resId);
+            if (color == resId) {
+                return;
+            }
+            ((ImageView) view).setColorFilter(color);
+        }
+    }
+
+    @Override
+    public void applyChanged(View view, int resId, String resName) {
+        if (view instanceof ImageView) {
+            ((ImageView) view).setColorFilter(AppTheme.getInstance().getColor(resId));
+        }
     }
 
     @Override
