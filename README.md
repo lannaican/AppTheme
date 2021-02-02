@@ -8,6 +8,10 @@ Android主题色框架
 - 低入侵性，老项目改造方便
 - 支持夜间模式，无需重启界面
 
+## [参考APP](http://tapsss.com)
+
+![示例图](https://github.com/lannaican/AppTheme/blob/master/sample.gif)
+
 
 ## 导入
 ```
