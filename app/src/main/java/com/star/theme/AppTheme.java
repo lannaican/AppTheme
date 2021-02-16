@@ -295,21 +295,21 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
             Object result = null;
             try {
                 result = method.invoke(inflaterFactory, args);
-            } catch (Exception e) { }
-            List<Attr> attrs = AttrUtils.getAttrs(args, activity.getResources());
-            if (attrs.isEmpty()) {
-                return result;
-            }
-            if (result == null) {
-                result = createViewFromTag((Context)args[2], (String)args[1], (AttributeSet)args[3]);
-            }
-            if (attrs.size() > 0) {
-                AttrView attrView = new AttrView((View) result, attrs);
-                putAttrView(attrView, activity.hashCode());
-                if (result != null) {
-                    attrView.apply(false);
+                List<Attr> attrs = AttrUtils.getAttrs(args, activity.getResources());
+                if (attrs.isEmpty()) {
+                    return result;
                 }
-            }
+                if (result == null) {
+                    result = createViewFromTag((Context)args[2], (String)args[1], (AttributeSet)args[3]);
+                }
+                if (attrs.size() > 0) {
+                    AttrView attrView = new AttrView((View) result, attrs);
+                    putAttrView(attrView, activity.hashCode());
+                    if (result != null) {
+                        attrView.apply(false);
+                    }
+                }
+            } catch (Exception e) { }
             return result;
         }
 
