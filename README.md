@@ -8,6 +8,10 @@ Android主题色框架
 - 低入侵性，老项目改造方便
 - 支持夜间模式，无需重启界面
 
+## [参考APP](http://tapsss.com)
+
+![示例图](https://github.com/lannaican/AppTheme/blob/master/sample.gif)
+
 
 ## 导入
 ```
@@ -85,6 +89,10 @@ public class CustomTheme implements Theme {
 2.初始化
 ```
 AppTheme.getInstance().init(); //建议在Application中执行
+
+AppTheme.getInstant.attach(); //在BaseActivity setContentView之前注册
+
+AppTheme.getInstant.detach(); //在BaseActivity onDestory取消注册
 ```
 
 3.切换主题/夜间模式
