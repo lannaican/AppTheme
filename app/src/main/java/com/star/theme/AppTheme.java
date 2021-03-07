@@ -20,9 +20,6 @@ import androidx.collection.SparseArrayCompat;
 import androidx.core.view.LayoutInflaterCompat;
 import androidx.core.view.LayoutInflaterFactory;
 
-import com.star.theme.Storage;
-import com.star.theme.Theme;
-import com.star.theme.ThemeView;
 import com.star.theme.attr.Attr;
 import com.star.theme.attr.AttrType;
 import com.star.theme.attr.AttrUtils;
@@ -41,8 +38,8 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
 
     private static com.star.theme.AppTheme instance;
 
-    private SparseArrayCompat<List<AttrView>> attrViewMaps = new SparseArrayCompat<>();
-    private List<Activity> activities = new ArrayList<>();
+    private final SparseArrayCompat<List<AttrView>> attrViewMaps = new SparseArrayCompat<>();
+    private final List<Activity> activities = new ArrayList<>();
 
     private static final Map<String, Constructor<? extends View>> sConstructorMap = new ArrayMap<>();
     private final Object[] mConstructorArgs = new Object[2];
@@ -128,13 +125,6 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
             LayoutInflater layoutInflater = LayoutInflater.from(activity);
             LayoutInflaterCompat.setFactory2(layoutInflater, proxyInflaterFactory);
         }
-    }
-
-    /**
-     * 取消注册
-     */
-    public void detach(AppCompatActivity activity) {
-        attrViewMaps.remove(activity.hashCode());
     }
 
     /**
@@ -275,6 +265,7 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
         activities.remove(activity);
+        attrViewMaps.remove(activity.hashCode());
     }
 
 
