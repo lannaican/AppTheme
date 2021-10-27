@@ -29,12 +29,12 @@ public class AttrTypeBackground extends AttrType {
         Context context = view.getContext();
         try {
             int findResId = context.getResources().getIdentifier(resName, DRAWABLE, context.getPackageName());
-            Drawable drawable = context.getDrawable(findResId);
+            Drawable drawable = context.getResources().getDrawable(findResId);
             view.setBackground(drawable);
         } catch (Resources.NotFoundException e) {
             try {
                 int findResId = context.getResources().getIdentifier(resName, MIPMAP, context.getPackageName());
-                Drawable drawable = context.getDrawable(findResId);
+                Drawable drawable = context.getResources().getDrawable(findResId);
                 view.setBackground(drawable);
             } catch (Resources.NotFoundException e1) {
                 try {

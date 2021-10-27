@@ -3,6 +3,7 @@ package com.star.theme;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -36,7 +37,7 @@ import java.util.Map;
 
 public class AppTheme implements Application.ActivityLifecycleCallbacks {
 
-    private static com.star.theme.AppTheme instance;
+    private static AppTheme instance;
 
     private final SparseArrayCompat<List<AttrView>> attrViewMaps = new SparseArrayCompat<>();
     private final List<Activity> activities = new ArrayList<>();
@@ -45,12 +46,14 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
     private final Object[] mConstructorArgs = new Object[2];
     private static final Class<?>[] sConstructorSignature = new Class[]{Context.class, AttributeSet.class};
 
-    public static com.star.theme.AppTheme getInstance() {
+    public static AppTheme getInstance() {
         if (instance == null) {
-            instance = new com.star.theme.AppTheme();
+            instance = new AppTheme();
         }
         return instance;
     }
+
+    private Application application;
 
     //持久存储
     private Storage storage;
@@ -67,15 +70,14 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
      */
     public void init(Application application, @NonNull Storage storage, @NonNull Theme defaultTheme) {
         application.registerActivityLifecycleCallbacks(this);
+        this.application = application;
         this.storage = storage;
         this.currentTheme = storage.getTheme(com.star.theme.StorageKey.Theme);
         if (this.currentTheme == null) {
             this.currentTheme = defaultTheme;
         }
-        boolean isNight = storage.getBoolean(com.star.theme.StorageKey.Night);
-        if (isNight) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        }
+        int mode = storage.getInt(StorageKey.Mode, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        AppCompatDelegate.setDefaultNightMode(mode);
     }
 
     public void setTheme(AppCompatActivity activity, @NonNull Theme theme) {
@@ -130,18 +132,27 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
     /**
      * 是否是夜间模式
      */
-    public boolean isNight() {
-        return storage.getBoolean(com.star.theme.StorageKey.Night);
+    public boolean isDarkMode() {
+        int mode = AppCompatDelegate.getDefaultNightMode();
+        if (mode == AppCompatDelegate.MODE_NIGHT_YES) {
+            return true;
+        }
+        if (mode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) {
+            if ((application.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * 设置夜间模式
      */
-    public void setNight(AppCompatActivity activity, boolean night) {
+    public void setMode(AppCompatActivity activity, int mode) {
         callListener(0);
         invokeResources(activity);
-        storage.set(com.star.theme.StorageKey.Night, night);
-        AppCompatDelegate.setDefaultNightMode(night ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+        storage.set(StorageKey.Mode, mode);
+        AppCompatDelegate.setDefaultNightMode(mode);
         callListener(1);
         update();
         callListener(2);
@@ -157,7 +168,7 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
     /**
      * 暗色主题
      */
-    public boolean isDark() {
+    public boolean isDarkTheme() {
         return currentTheme.isDark();
     }
 
