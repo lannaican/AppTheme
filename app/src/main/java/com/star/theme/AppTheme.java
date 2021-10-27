@@ -61,6 +61,9 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
     //当前主题
     private Theme currentTheme;
 
+    //深色模式
+    private Boolean isDarkMode;
+
     private List<OnThemeListener> onThemeListeners = new ArrayList<>();
 
     private AppTheme() {}
@@ -81,6 +84,7 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
     }
 
     public void setTheme(AppCompatActivity activity, @NonNull Theme theme) {
+        isDarkMode = null;
         callListener(0);
         this.currentTheme = theme;
         storage.set(com.star.theme.StorageKey.Theme, theme);
@@ -130,25 +134,43 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
     }
 
     /**
-     * 是否是夜间模式
+     * 是否是深色模式
      */
     public boolean isDarkMode() {
-        int mode = AppCompatDelegate.getDefaultNightMode();
-        if (mode == AppCompatDelegate.MODE_NIGHT_YES) {
-            return true;
-        }
-        if (mode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) {
-            if ((application.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES) {
-                return true;
+        if (isDarkMode == null) {
+            int mode = AppCompatDelegate.getDefaultNightMode();
+            if (mode == AppCompatDelegate.MODE_NIGHT_YES) {
+                return isDarkMode = true;
             }
+            if (mode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) {
+                if ((application.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES) {
+                    return isDarkMode = true;
+                }
+            }
+            return isDarkMode = false;
         }
-        return false;
+        return isDarkMode;
     }
 
     /**
-     * 设置夜间模式
+     * 获取深色模式设置
+     *
+     * @return
+     */
+    public int getDarkMode() {
+        return storage.getInt(StorageKey.Mode, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+    }
+
+    private void updateDarkModeValue() {
+        isDarkMode = null;
+        isDarkMode();
+    }
+
+    /**
+     * 设置深色模式
      */
     public void setMode(AppCompatActivity activity, int mode) {
+        isDarkMode = null;
         callListener(0);
         invokeResources(activity);
         storage.set(StorageKey.Mode, mode);
@@ -166,7 +188,7 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
     }
 
     /**
-     * 暗色主题
+     * 是否深色主题
      */
     public boolean isDarkTheme() {
         return currentTheme.isDark();
@@ -220,7 +242,7 @@ public class AppTheme implements Application.ActivityLifecycleCallbacks {
      * 清除缓存
      */
     public void clearCache() {
-
+        updateDarkModeValue();
     }
 
     private void callListener(int state) {
